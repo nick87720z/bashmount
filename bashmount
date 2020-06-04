@@ -488,6 +488,7 @@ action_open() {
     printf '\n'
     msg "Opening ${1} ..."
     printf '\n'
+    tput rmcup
     filemanager "$(info_mountpath "${1}")"
     enter_to_continue
 }
@@ -586,6 +587,11 @@ list_devices() {
     (( device_number )) || printf '%s\n' 'No devices.'
 }
 
+quit() {
+    tput rmcup
+    exit ${1}
+}
+
 submenu() {
     check_device "${devname}" || return 1
     local info_label= info_fstype= info_size=
@@ -630,7 +636,7 @@ submenu() {
         'u') action_unmount "${devname}";;
         'b') return 1;;
         'r') return 0;;
-        'q') exit;;
+        'q') quit;;
         '?')
             print_help_sub
             return 0;;
@@ -766,7 +772,7 @@ select_action() {
             'r'|"")
                 return 0;;
             'q'|'b')
-                exit 0;;
+                quit 0;;
             '?')
                 print_help
                 return 0;;
@@ -782,9 +788,11 @@ declare -i device_number=
 declare -a mounted=()
 declare -a listed=()
 
+tput smcup
 while true; do
     clear
     list_devices
     (( show_commands )) && print_commands
     select_action
 done
+quit
